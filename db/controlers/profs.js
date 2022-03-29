@@ -1,4 +1,5 @@
 const Prof = require('../models/profs');
+const Mat = require('../models/matieres');
 const bcrypt = require('bcrypt');
 const jwtUtils = require('../../jwt.utils');
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -16,8 +17,9 @@ exports.createProf = (req, res) => {
     const mdp = req.body.mdp;
     const prenom = req.body.prenom;
     const dateFinContrat = req.body.dateFinContrat;
+	const nomMat = req.body.mat;
 
-    if (email == null || nom == null || mdp == null || prenom == null || dateFinContrat == null) {
+    if (email == null || nom == null || mdp == null || prenom == null || dateFinContrat == null || nomMat == null) {
         return res.status(400).json({ 'error': 'paramètre manquant' });
     }
 
@@ -30,24 +32,41 @@ exports.createProf = (req, res) => {
     };
 
     Prof.findOne({email: email})
-    .then((userFound) => {
-        if (!userFound) {
-            bcrypt.hash(mdp, 5, function( err, bcryptedPassword ){
-                const prof = new Prof({ 
-                    prenom: prenom,
-                    nom: nom,
-                    email: email,
-                    mdp: bcryptedPassword,
-                    dateFinContrat: dateFinContrat
-                });
-                prof.save()
-                .then((prof) => {
-                    return res.status(201).json({prof});
-                })
-                .catch((err) => {
-                    return res.status(400).json({err});
-                });
-            });
+    .then((profFound) => {
+        if (!profFound) {
+			Mat.findOne({nom: nomMat})
+			.then((matFound) => {
+				if (!matFound) {
+					bcrypt.hash(mdp, 5, function( err, bcryptedPassword ){
+						const prof = new Prof({ 
+							prenom: prenom,
+							nom: nom,
+							email: email,
+							mdp: bcryptedPassword,
+							dateFinContrat: dateFinContrat
+						});
+						prof.save()
+						.then((prof) => {
+							const mat = new Mat({
+								nom: nomMat,
+								prof: prof._id
+							});
+							mat.save()
+							.then((mat) => {
+								return res.status(201).json({mat, prof})
+							})
+							.catch( (error) => { return res.status(400).json({error}) });
+						})
+						.catch((err) => {
+							return res.status(400).json({err});
+						});
+					});
+				}
+				else {
+					return res.status(409).json ({ 'erreur': 'la matière existe déjà'});
+				}
+			})
+			.catch((err) => { return res.status(500)});
         }
         else {
             return res.status(409).json ({ 'erreur': 'l\'utilisateur existe déjà' });

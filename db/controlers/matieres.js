@@ -12,7 +12,7 @@ exports.createMat = (req, res) => {
 
     mat.save()
    .then((mat) => {
-        return res.status(201).json({mat})
+        return res.status(200).json({mat})
     })
    .catch( (error) => { return res.status(400).json({error}) });
 }
