@@ -1,4 +1,5 @@
 const Eleve = require('../models/eleves');
+const Note = require('../models/notes')
 const bcrypt = require('bcrypt');
 const jwtUtils = require('../../jwt.utils');
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -161,7 +162,11 @@ exports.delEleve = (req, res) => {
     
     const id = req.params.id;
 
-    Eleve.deleteOne({_id: id})
-    .then((eleve) => { return res.status(200).json( {eleve} )})
-    .catch((error) => { return res.status(400).json( {error} )});
+	Note.deleteMany({eleve: id})
+	.then((note) => {
+		Eleve.deleteOne({_id: id})
+		.then((eleve) => { return res.status(200).json( {eleve, note} )})
+		.catch((error) => { return res.status(400).json( {error} )});
+	})
+	.catch((error) => { return res.status(400).json( {error} )})
 };

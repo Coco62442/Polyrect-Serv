@@ -1,4 +1,5 @@
 const Mat = require('../models/matieres');
+const Note = require('../models/notes');
 const jwtUtils = require('../../jwt.utils');
 
 exports.createMat = (req, res) => {
@@ -79,7 +80,12 @@ exports.delMat = (req, res) => {
 
     const id = req.params.id;
 
-    Mat.deleteOne({_id: id})
-    .then((mat) => { return res.status(200).json( {mat} )})
-    .catch((error) => { return res.status(400).json( {error} )});
+	Note.deleteMany({matiere: id})
+	.then((note) => {
+		Mat.deleteOne({_id: id})
+		.then((mat) => { return res.status(200).json( {mat, note} )})
+		.catch((error) => { return res.status(400).json( {error} )});
+	})
+	.catch((error) => { return res.status(400).json( {error})});
+	
 }

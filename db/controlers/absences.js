@@ -57,7 +57,7 @@ exports.putAbsence = (req, res) => {
     .then ((absenceFound) => { 
         absenceFound.updateOne({
             justifie: req.body.justifie,
-            justification: (req.body.justification ? req.body.justification: absenceFound.justification),
+            justification: req.body.justification,
             date: (req.body.date ? req.body.date: absenceFound.date),
             eleve: (req.body.eleve ? req.body.eleve: absenceFound.eleve),
         })
