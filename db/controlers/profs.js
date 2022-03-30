@@ -82,7 +82,7 @@ exports.loginProf = (req, res) => {
     if (email == null || mdp == null) {  
         return res.status (400).json({ 'erreur': 'paramètre manquant' });
     }
-
+	
     Prof.findOne({email: email})
     .then((userFound) => {
         if (userFound) {
@@ -161,11 +161,12 @@ exports.putProf = (req, res) => {
     Prof.findOne({_id: id})
     .then ((prof) => {
         bcrypt.hash(mdp, 5, function( err, bcryptedPassword ){
+			console.log(bcryptedPassword)
             prof.updateOne({
                 prenom: (prenom ? prenom: prof.prenom),
                 nom: (nom ? nom: prof.nom),
                 email: (email ? email: prof.email),
-                mdp: (bcryptedPassword ? mdp: prof.mdp),
+                mdp: (mdp ? bcryptedPassword: prof.mdp),
                 dateFinContrat: (dateFinContrat ? dateFinContrat: prof.dateFinContrat)
             })
             .then((prof) => {
